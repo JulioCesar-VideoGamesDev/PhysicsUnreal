@@ -56,5 +56,7 @@ protected:
 protected:
 	/** The Character holding this weapon*/
 	APhysicsCharacter* Character;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	class USceneComponent* FireOffset;
 };
