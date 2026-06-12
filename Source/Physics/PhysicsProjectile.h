@@ -30,6 +30,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Damage)
 	UPhysicsWeaponComponent* m_OwnerWeapon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
+	TSubclassOf<UDamageType> DamageType;
 public:
 	APhysicsProjectile();
 

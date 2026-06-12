@@ -19,6 +19,8 @@ UPhysicsWeaponComponent::UPhysicsWeaponComponent()
 	// Default offset from the character location for projectiles to spawn
 	MuzzleOffset = FVector(100.0f, 0.0f, 10.0f);
 
+	//FireOffset = CreateDefaultSubobject<USceneComponent>(TEXT("Fire Offset"));
+	//FireOffset->SetWorldLocation(vFireOffsetPos);
 }
 
 void UPhysicsWeaponComponent::BeginPlay()

@@ -48,6 +48,20 @@ void APhysicsCharacter::BeginPlay()
 void APhysicsCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (m_PhysicsHandle->GetGrabbedComponent())
+	{
+		FVector TargetLocation =
+			GetFirstPersonCameraComponent()->GetComponentLocation() +
+			GetFirstPersonCameraComponent()->GetForwardVector() * 250.f;
+
+		FRotator TargetRotation = GetFirstPersonCameraComponent()->GetComponentRotation();
+
+		m_PhysicsHandle->SetTargetLocationAndRotation(
+			TargetLocation,
+			TargetRotation
+		);
+	}
 }
 
 void APhysicsCharacter::NotifyControllerChanged()
@@ -88,7 +102,14 @@ void APhysicsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void APhysicsCharacter::SetIsSprinting(bool NewIsSprinting)
 {
-
+	if (NewIsSprinting)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 10000.f;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 2048.f;
+	}
 }
 
 void APhysicsCharacter::Move(const FInputActionValue& Value)
@@ -124,10 +145,33 @@ void APhysicsCharacter::Sprint(const FInputActionValue& Value)
 
 void APhysicsCharacter::GrabObject(const FInputActionValue& Value)
 {
+	FHitResult Hit;
+
+	FVector Start = GetFirstPersonCameraComponent()->GetComponentLocation();
+	FVector End = Start + GetFirstPersonCameraComponent()->GetForwardVector() * 500.f;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		UPrimitiveComponent* Comp = Hit.GetComponent();
+
+		if (Comp && Comp->IsSimulatingPhysics())
+		{
+			m_PhysicsHandle->GrabComponentAtLocationWithRotation(
+				Comp,
+				NAME_None,
+				Hit.ImpactPoint,
+				Comp->GetComponentRotation()
+			);
+		}
+	}
 }
 
 void APhysicsCharacter::ReleaseObject(const FInputActionValue& Value)
 {
+	m_PhysicsHandle->ReleaseComponent();
 }
 
 void APhysicsCharacter::ZoomIn()

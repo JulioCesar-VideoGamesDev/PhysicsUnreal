@@ -35,4 +35,16 @@ APhysicsProjectile::APhysicsProjectile()
 
 void APhysicsProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	//OtherComp->AddImpulse(GetProjectileMovement()->Velocity * 1000.f);
+	UGameplayStatics::ApplyPointDamage(
+		Hit.GetActor(),                  // Actor que recibe el daño
+		25.f,                            // Cantidad de daño
+		GetActorForwardVector(),         // Dirección del disparo
+		Hit,                             // FHitResult del impacto
+		GetInstigatorController(),       // Quién disparó
+		this,                            // Qué causó el daño (proyectil, arma...)
+		DamageType        // Tipo de daño
+	);
+
+	Destroy();
 }

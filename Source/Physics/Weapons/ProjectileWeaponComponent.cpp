@@ -5,6 +5,7 @@
 #include "PhysicsCharacter.h"
 #include "PhysicsProjectile.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 void UProjectileWeaponComponent::Fire()
 {
@@ -12,29 +13,32 @@ void UProjectileWeaponComponent::Fire()
 
     UE_LOG(LogTemp, Warning, TEXT("ShootProjectile"));
 
-    float HitLength = 1000000.f;
-    float HitStrength = 1000000.f;
+	// Calculate impact location
+	FVector rayStart{ Character->FirstPersonCameraComponent->GetComponentLocation() };
+	FVector rayDir{ Character->FirstPersonCameraComponent->GetForwardVector() };
+	FVector rayEnd{ rayStart + rayDir * 1000000 };
 
-    FHitResult hit{};
+	FVector bulletSpawn{ GetComponentLocation() + GetComponentRotation().RotateVector(MuzzleOffset) };
+	FVector bulletEnd{ rayEnd };
 
-    FCollisionQueryParams Params;
-    Params.AddIgnoredActor(Character);
+	FHitResult hit{};
+	FCollisionQueryParams queryParams{};
+	queryParams.AddIgnoredActor(GetOwner());
+	if (GetWorld()->LineTraceSingleByChannel(hit, rayStart, rayEnd, ECC_Visibility, queryParams))
+	{
+		bulletEnd = hit.ImpactPoint;
+	}
 
-    if (m_ProjectileClass)
-    {
-        FVector SpawnLocation = GetOwner()->GetActorLocation() + FireOffset->GetComponentLocation();
-        FRotator SpawnRotation = Character->GetFirstPersonCameraComponent()->GetComponentRotation();
+	// Spawn projectile
+	FActorSpawnParameters spawnParams{};
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	APhysicsProjectile* projectile = GetWorld()->SpawnActor<APhysicsProjectile>(m_ProjectileClass, FTransform(bulletSpawn), spawnParams);
+	if (projectile)
+	{
+		projectile->m_OwnerWeapon = this;
 
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.Owner = Character;
-
-        APhysicsProjectile* Projectile = GetWorld()->SpawnActor<APhysicsProjectile>(
-            m_ProjectileClass,
-            SpawnLocation,
-            SpawnRotation,
-            SpawnParams
-        );
-
-        //Projectile->GetProjectileMovement()->
-    }
+		FVector projectileDir = (bulletEnd - bulletSpawn).GetSafeNormal();
+		projectile->DamageType = DamageType;
+		projectile->GetProjectileMovement()->Velocity = projectileDir * projectile->GetProjectileMovement()->InitialSpeed;
+	}
 }

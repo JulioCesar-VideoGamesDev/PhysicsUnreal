@@ -7,6 +7,7 @@
 #include "PhysicsWeaponComponent.generated.h"
 
 class APhysicsCharacter;
+class UDamageType;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PHYSICS_API UPhysicsWeaponComponent : public USkeletalMeshComponent
@@ -35,6 +36,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* FireAction;
 
+
 	/** Sets default values for this component's properties */
 	UPhysicsWeaponComponent();
 
@@ -54,9 +56,15 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 protected:
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
+	TSubclassOf<UDamageType> DamageType;
+
 	/** The Character holding this weapon*/
 	APhysicsCharacter* Character;
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	class USceneComponent* FireOffset;
+
+	FVector vFireOffsetPos{1.f,0.f,0.f};
 };
