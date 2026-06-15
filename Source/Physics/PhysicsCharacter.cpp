@@ -49,11 +49,19 @@ void APhysicsCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	
+
+	FVector Start = GetFirstPersonCameraComponent()->GetComponentLocation();
+	FVector End = Start + GetFirstPersonCameraComponent()->GetForwardVector() * 500.f;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
 	if (m_PhysicsHandle->GetGrabbedComponent())
 	{
 		FVector TargetLocation =
 			GetFirstPersonCameraComponent()->GetComponentLocation() +
-			GetFirstPersonCameraComponent()->GetForwardVector() * 250.f;
+			GetFirstPersonCameraComponent()->GetForwardVector() * m_DistanceObjectGrabbed;
 
 		FRotator TargetRotation = GetFirstPersonCameraComponent()->GetComponentRotation();
 
@@ -61,6 +69,39 @@ void APhysicsCharacter::Tick(float DeltaSeconds)
 			TargetLocation,
 			TargetRotation
 		);
+	}
+
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		if (Hit.GetActor() != LastTarget)
+		{
+			LastTarget = Hit.GetActor();
+
+			if (MeshComp)
+			{
+				MeshComp->SetOverlayMaterial(NULL);
+				MeshComp = nullptr;
+			}
+		}
+
+		MeshComp = Cast<UStaticMeshComponent>(Hit.GetComponent());
+		if (MeshComp)
+		{
+			MeshComp->SetOverlayMaterial(m_HighlightMaterial);
+		}
+	}
+	else 
+	{
+		if (LastTarget)
+		{
+			LastTarget = nullptr;
+		}
+
+		if (MeshComp)
+		{
+			MeshComp->SetOverlayMaterial(NULL);
+			MeshComp = nullptr;
+		}
 	}
 }
 
@@ -104,11 +145,11 @@ void APhysicsCharacter::SetIsSprinting(bool NewIsSprinting)
 {
 	if (NewIsSprinting)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 10000.f;
+		GetCharacterMovement()->MaxWalkSpeed = sprintSpeed;
 	}
 	else
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 2048.f;
+		GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
 	}
 }
 
@@ -145,18 +186,10 @@ void APhysicsCharacter::Sprint(const FInputActionValue& Value)
 
 void APhysicsCharacter::GrabObject(const FInputActionValue& Value)
 {
-	FHitResult Hit;
+	
 
-	FVector Start = GetFirstPersonCameraComponent()->GetComponentLocation();
-	FVector End = Start + GetFirstPersonCameraComponent()->GetForwardVector() * 500.f;
-
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	if (UPrimitiveComponent* Comp = Hit.GetComponent())
 	{
-		UPrimitiveComponent* Comp = Hit.GetComponent();
-
 		if (Comp && Comp->IsSimulatingPhysics())
 		{
 			m_PhysicsHandle->GrabComponentAtLocationWithRotation(
@@ -165,6 +198,8 @@ void APhysicsCharacter::GrabObject(const FInputActionValue& Value)
 				Hit.ImpactPoint,
 				Comp->GetComponentRotation()
 			);
+
+			m_DistanceObjectGrabbed = (Comp->GetComponentLocation() - GetFirstPersonCameraComponent()->GetComponentLocation()).Length();
 		}
 	}
 }

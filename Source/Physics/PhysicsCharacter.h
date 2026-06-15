@@ -38,11 +38,11 @@ public:
 	UInputMappingContext* DefaultMappingContext;
 
 	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 
 	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
 	/** Look Input Action */
@@ -85,6 +85,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Config, meta = (AllowPrivateAccess = "true"))
 	class UMaterialInterface* m_HighlightMaterial;
 
+	FHitResult Hit{};
+
+	AActor* LastTarget{nullptr};
+
+	UStaticMeshComponent* MeshComp{nullptr};
+
 	/** Maximum distance to allow component grabbing */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Config, meta = (AllowPrivateAccess = "true"))
 	float m_MaxGrabDistance = 1000.f;
@@ -99,6 +105,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FZoomOutSignature OnZoomOut;
 
+	float walkSpeed = 600.f;
+	float sprintSpeed = 10000.f;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DebugData, meta = (AllowPrivateAccess = "true"))
 	float m_Sensitivity = 1.f;
@@ -110,7 +119,9 @@ protected:
 	float m_CurrentHealth;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DebugData, meta = (AllowPrivateAccess = "true"))
 	UPhysicsHandleComponent* m_PhysicsHandle;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DebugData, meta = (AllowPrivateAccess = "true"))
+	float m_DistanceObjectGrabbed;
 public:
 	APhysicsCharacter();
 	virtual void BeginPlay() override;
