@@ -11,11 +11,13 @@ ABreakableTarget::ABreakableTarget()
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	SetRootComponent(StaticMesh);
+	//StaticMesh->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 
 	GeometryCollection = CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("GeometryCollection"));
 	GeometryCollection->SetupAttachment(StaticMesh);
 	GeometryCollection->OnChaosBreakEvent.AddDynamic(this, &ABreakableTarget::GeometryCollectionBroken);
 	GeometryCollection->SetNotifyBreaks(true);
+	//GeometryCollection->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 
 }
 
@@ -42,4 +44,3 @@ void ABreakableTarget::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-

@@ -16,6 +16,7 @@ class PHYSICS_API ABreakableTarget : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABreakableTarget();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* StaticMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
